@@ -1,13 +1,17 @@
 import csv
 import json
 
-# Organise the delegate data
+# ##################### #
+# GET THE DELEGATE DATA #
+# ##################### #
 csvfile = open('delegates.csv', 'r')
 jsonfile = open('delegates.json', 'w')
-fieldnames = ('id', 'school', 'city', 'first_name', 'last_name', "sex", "dob", "nationality", "special_req", "day1", "day2", "day3", "day4")
+# Convert .csv to arry
+fieldnames = ('id', 'school', 'city', 'first_name', 'last_name', "sex", "dob", "nationality", "allergies", "special_req", "day1", "day2", "day3", "day4")
 reader = csv.DictReader( csvfile, fieldnames)
 delegates_data = []
 row_number = 0
+# Parse the needed data into usable format
 for row in reader:
     days = []
     if row["day1"] == 1:
@@ -23,60 +27,103 @@ for row in reader:
         sex = "male"
     elif row["sex"] == "F":
         sex = "female"
+
+    if row["allergies"] != "":
+        alergies = True
+    else:
+        alergies = False
+
     delegate = {
         "id": row["id"],
         "first_name": row["first_name"],
         "last_name": row["last_name"],
         "sex": sex,
-        "days": days
+        "days": days,
+        "alergies": alergies
     }
 
-    # Dump the selected delegate_data into the json file
+    # Add the parsed delegate data into the delegate data array
     if row_number != 0:
         delegates_data.append(delegate)
     row_number += 1
 
+# Dump the selected delegate_data into the json file
 json.dump(delegates_data, jsonfile)
 jsonfile.write('\n')
 
-# .json file format must be the following
-# [
-#     {
-#         name: "Gamito",
-#         student: "Pablo Gamito",
-#         capacity: 2,
-#         sex_preference: "female", # "none" or "male"
-#         can_host_on_days: [1, 2, 3, 4, 5]
-#     },
-#     {
-#         name: "Gillet",
-#         student: "Martin Gillet",
-#         capacity: 69,
-#         sex_preference: "none", # "none" or "male"
-#         can_host_on_days: [4, 5]
-#     }
-# ]
+# #################### #
+# GET THE HOSTING DATA #
+# #################### #
+csvfile = open('hosts.csv', 'r')
+jsonfile = open('hosts.json', 'w')
+# Convert .csv to arry
+fieldnames = ('horodateur', 'last_name', 'first_name', 'adresse', 'phone', "email", "capacity", "sex_preference", "day1", "day2", "day3", "day4")
+reader = csv.DictReader( csvfile, fieldnames)
+delegates_data = []
+row_number = 0
+# Parse the needed data into usable format
+for row in reader:
+    days = []
+    if row["day1"] == 1:
+        days.push(1)
+    if row["day2"] == 1:
+        days.push(2)
+    if row["day3"] == 1:
+        days.push(3)
+    if row["day4"] == 1:
+        days.push(4)
 
-# matches = []
-# delegates_with_no_preference_data = []
-#
-# with open('hosts_data.json') as data_file:
-#     hosts_data = json.load(data_file)
-#
-# with open('delegates_data.json') as data_file:
-#     delegates_data = json.load(data_file)
+    if row["sex_preference"] == "Boys":
+        sex_preference = "male"
+    elif row["sex_preference"] == "Girls":
+        sex_preference = "female"
+    else:
+        sex_preference = "none"
+    delegate = {
+        "id": row["id"],
+        "first_name": row["first_name"],
+        "last_name": row["last_name"],
+        "sex_preference": sex_preference,
+        "days": days,
+        "capacity": capacity
+    }
 
-# for host in host_data:
-#     available_capacity = host.capacity
-#     sex_preference = host.sex_preference
-#     for delegate in delegates_data:
-#         if sex_preference == "none":
-#             # keep for the end
-#             delegates_with_no_preference_data.push(delegate)
-#         elif sex_preference == "male":
-#
-#         elif sex_preference == "female":
-#
-#
-#
-# pprint(data)
+    # Add the parsed delegate data into the delegate data array
+    if row_number != 0:
+        delegates_data.append(delegate)
+    row_number += 1
+
+# Dump the selected delegate_data into the json file
+json.dump(delegates_data, jsonfile)
+jsonfile.write('\n')
+
+# TODO: Treat student with alergies independently later
+
+matches = []
+hosts_with_no_preference_data = []
+
+with open('hosts.json') as data_file:
+    hosts_data = json.load(data_file)
+
+with open('delegates.json') as data_file:
+    delegates_data = json.load(data_file)
+
+for host in host_data:
+    available_capacity = host["capacity"]
+    sex_preference = host["sex_preference"]
+    for delegate in delegates_data:
+        if sex_preference == "none":
+            # keep for the end
+            hosts_with_no_preference_data.append(delegate)
+        elif sex_preference == delegate["sex"]:
+            # Found match
+            matches.append({
+                "host": host
+                "delegate": delegate
+            })
+            # TODO: Remove delegate from list
+            host["capacity"] = host["capacity"] - 1
+
+
+
+pprint(data)
